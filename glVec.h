@@ -11,6 +11,7 @@
 
 //THIS NEEDS TO BE RE-WRITTEN
 namespace gl{
+
     struct vec4{
         GLfloat x,y,z,w;
         
@@ -53,6 +54,10 @@ namespace gl{
         vec4 operator * //multiplication (by vector)
         (const vec4& v) const
         { return vec4(x*v.x,y*v.y,z*v.z,w*v.w); }
+        
+        vec4 operator / //division (by scalar)
+        (const GLfloat s) const
+        { return *this * (GLfloat(1.0) / s); }
         
         vec4& operator += //additive modifier
         (const vec4& v)

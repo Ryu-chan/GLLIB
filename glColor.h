@@ -33,9 +33,6 @@ namespace gl{
         glColor(GLuint val)
             :value(val)
         {}
-        /*glColor(glColor& c)
-            :value(c.getRGBA())
-        {}*/
         
         
         GLuint getRGBA(){
@@ -92,6 +89,9 @@ namespace gl{
         
         glColor opacify(GLuint a){
             return glColor(getRed(),getGreen(),getBlue(),a);
+        }
+        glColor opacify(GLfloat a){
+            return glColor(getRed(),getGreen(),getBlue(),a*255+0.5);
         }
         
         
@@ -162,7 +162,7 @@ namespace gl{
         
         
         /** CONSTANTS **/
-        static const glColor
+        static glColor
             RED,
             DARKRED,
             ORANGE,
@@ -186,7 +186,7 @@ namespace gl{
 
     };
     
-    const glColor
+    glColor
         glColor::RED             = glColor( (GLuint) 231,  76,  60),
         glColor::DARKRED         = glColor( (GLuint) 192,  57,  43),
         glColor::ORANGE          = glColor( (GLuint) 230, 126,  34),

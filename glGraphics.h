@@ -15,11 +15,15 @@
 #include "glColor.h"
 #include "glVec.h"
 #include "glMat.h"
+#include "glView.h"
+#include "glShaders.h"
 
 #define STATIC_BUFFER 0
 #define MUTABLE_BUFFER 1
 
 namespace gl{
+    
+    typedef vec4 point;
     
     struct gl_buf{
         GLenum      target;
@@ -31,7 +35,7 @@ namespace gl{
         bool        render = true;
         bool        update = false;
         glColor     color = glColor::BLACK;
-        mat4        mview = mat4(1);
+        view        mview;
         
         char        type = -1;
         
@@ -120,19 +124,6 @@ namespace gl{
     }
     
     
-    mat4 camera = mat4(1);
-    
-    void modifyCamera(mat4 view){
-        camera *= view;
-    }
-    void setCamera(mat4 view){
-        camera = view;
-    }
-    void resetCamera(mat4 view){
-        camera = mat4(1);
-    }
-    
-    
     glbufmap gl_buffers;
     
     void updateData(gl_buf* b){
@@ -153,14 +144,22 @@ namespace gl{
         gl_buffers.at(ref)->update = true;
     }
     
-    void resetView(const char* ref){
-        gl_buffers.at(ref)->mview = mat4(1);
+    void setView(const char* ref,view v){
+        gl_buffers.at(ref)->mview = v;
     }
-    void setView(const char* ref,mat4 view){
-        gl_buffers.at(ref)->mview = view;
+    
+    void rotateView(const char* ref,mat4 rotation){
+        gl_buffers.at(ref)->mview.modR(rotation);
     }
-    void modifyView(const char* ref,mat4 view){
-        gl_buffers.at(ref)->mview *= view;
+    void translateView(const char* ref,mat4 translation){
+        gl_buffers.at(ref)->mview.modT(translation);
+    }
+    void scaleView(const char* ref,mat4 scale){
+        gl_buffers.at(ref)->mview.modS(scale);
+    }
+    
+    void changeColor(const char* ref,glColor color){
+        gl_buffers.at(ref)->color = color;
     }
     
     void addBuffer(const char* ref, GLuint loc, gl_buf* buf){
@@ -192,7 +191,7 @@ namespace gl{
                     }
                 
                 sendUniformV("color",getColor(b->color));
-                sendUniformM("modelview",camera*b->mview);
+                sendUniformM("modelview",worldview*b->mview);
                 sendAttrib("vPosition");
                 
                 glDrawArrays(b->mode,0,(int)(b->data->size()));
@@ -242,245 +241,6 @@ namespace gl{
     void setTimeout(unsigned int ms,void(*_timefunc)(int i),int i){
         glutTimerFunc(ms, _timefunc, i);
     }
-    /*
-    
-    void animationLoop(int ms,void(*_animate)()){
-        
-    }
-    
-    static void setAnimation(unsigned int timeout,void(*_animate)(),unsigned int delay = 1000){
-        setTimeout(delay,[]()->void(int i){
-            setTimeout(delay,[]()->void(int j){
-                
-            },i);
-        },timeout);
-        
-        animate=_animate;
-        animation(timeout);
-    }
-    
-    */
-    /*struct buffer{
-        GLenum          target;
-        GLenum          usage;
-        GLenum          mode;
-        
-        GLuint          loc;
-        
-        bool            render = true;
-        glColor         color = glColor::BLACK;
-        
-        char            type = -1;
-    };
-    
-    const char STATIC_BUFFER = 0;
-    struct static_buffer:public buffer{
-        GLvoid*         data;
-        int             n;
-    };
-    
-    const char MUTABLE_BUFFER = 1;
-    struct mutable_buffer:public buffer{
-        std::vector<point>* vec;
-    };*/
-    
-    /*typedef std::map<unsigned int,buffer*> bmap;
-    typedef std::map<unsigned int,GLuint> pmap;*/
- /*
-    class glGraphics{
-    private:
-        static bmap buffers;
-        static pmap programs;
-        static void (*animate)();
-        
-        static void animation(int i){
-            animate();
-            glutTimerFunc(i,animation,i);
-        }
-    public:
-        
-        //Takes a name and shaders to make a program and store it
-        /static void createProgram(unsigned int name,const char* vshader,const char* fshader){
-            GLuint program = initShaders(vshader,fshader);
-            
-            programs.insert(std::pair<unsigned int,GLuint>(name,program));
-        }*/
-        
-        //Gets a program from the store and uses it
-        /*static void useProgram(unsigned int name){
-            GLuint program = programs.at(name);
-            
-            glUseProgram(program);
-            
-            vPosition = glGetAttribLocation(program,"vPosition");
-            glEnableVertexAttribArray( vPosition );
-            
-            LOC_color = glGetUniformLocation(program, "color");
-            LOC_model = glGetUniformLocation(program, "modelview");
-            
-            setViewScale();
-        }*/
-        
-        //Sets the clear color
-        /*static void setBackground(glColor c){
-            vec4 color = getColor(c);
-            glClearColor(color.x,color.y,color.z,color.w);
-        }
-        
-        //Sets the drawing color
-        static void setColor(glColor color){
-            glUniform4fv(LOC_color,1,getColor(color));
-        }*/
-        
-        //Sets the view to some scale of 1 x 1 x 1
-        /*static void setViewScale(GLfloat x=1.0,GLfloat y=1.0,GLfloat z=1.0){
-            mat4 scale;
-                scale[0][0] = x;
-                scale[1][1] = y;
-                scale[2][2] = z;
-            glUniformMatrix4fv(LOC_model, 1, GL_TRUE, mat4(1.0)*scale);
-        }
-        */
-        //Adds a buffer to the store with the given location from gen buffer
-        /*static void addBuffer(unsigned int ref, GLuint loc, buffer* buf){
-            buf -> loc = loc;
-            buffers.insert(std::pair<unsigned int,buffer*>(ref,buf));
-            updateData(buf);
-        }
-        
-        //Gets a buffer from the store with the given reference
-        static buffer* getBuffer(unsigned int ref){
-            return buffers.at(ref);
-        }
-        
-        //Generates the number of buffers and passes back their values
-        static GLuint* genBuffers(unsigned int n){
-            GLuint* buffers = new GLuint[n];
-            glGenBuffers(n,&buffers[0]);
-            return buffers;
-        }*/
-        
-        //Rebinds data to the specified buffer
-        /*static void updateData(buffer* b){
-            if(b->type == STATIC_BUFFER){
-                static_buffer* buf = (static_buffer*)b;
-                glBindBuffer(buf -> target, buf -> loc);
-                glBufferData(buf -> target, buf -> n, buf -> data, buf -> usage);
-            }else if(b->type == MUTABLE_BUFFER){
-                mutable_buffer* buf = (mutable_buffer*)b;
-                glBindBuffer(buf -> target, buf -> loc);
-                glBufferData(buf -> target, ((int)(buf -> vec -> size())) * sizeof(point),buf->vec->data(), buf -> usage);
-            }
-        }*/
-        
-        //Renders all of the buffers in the map
-        /*static void renderBuffers(){
-            for(bmap::iterator it=buffers.begin();it!=buffers.end();it++){
-                if(it->second->type == STATIC_BUFFER){
-                    static_buffer* b = (static_buffer*)it->second;
-                    if(b->render){
-                        setColor(b->color);
-                        glBindBuffer(b->target,b->loc);
-                        glVertexAttribPointer(vPosition,4,GL_FLOAT,GL_FALSE,0,BUFFER_OFFSET(0));
-                        glDrawArrays(b->mode,0,b->n);
-                    }
-                }else if(it->second->type == MUTABLE_BUFFER){
-                    mutable_buffer* b = (mutable_buffer*)it->second;
-                    if(b->render){
-                        updateData(b);
-                        setColor(b->color);
-                        glBindBuffer(b->target,b->loc);
-                        glVertexAttribPointer(vPosition,4,GL_FLOAT,GL_FALSE,0,BUFFER_OFFSET(0));
-                        glDrawArrays(b->mode,0,((int)b->vec->size()));
-                    }
-                }
-            }
-        }*/
-        /*
-        static void setTimeout(unsigned int ms,void(*_timefunc)(int i)){
-            glutTimerFunc(ms, _timefunc, 0);
-        }
-        
-        static void setAnimation(unsigned int timeout,void(*_animate)(),unsigned int delay = 1000){
-            animate=_animate;
-            animation(timeout);
-        }*/
-        
-        /** MAKE ARRAYS **/
-        /*
-        static static_buffer* makeEmptyStaticArrayBuffer(GLenum mode){
-            return makeStaticArrayBuffer(mode,NULL,0);
-        }
-        
-        static static_buffer* makeStaticArrayBuffer(GLenum mode,GLvoid* data,unsigned int dataSize){
-            static_buffer* ret = new static_buffer;
-            
-            ret -> type = STATIC_BUFFER;
-            
-            ret -> data = data;
-            ret -> n = dataSize;
-            ret -> mode = mode;
-            
-            ret -> target = GL_ARRAY_BUFFER;
-            ret -> usage = GL_STATIC_DRAW;
-            
-            return ret;
-        }
-        
-        
-        static static_buffer* makeStaticRectBuffer(point* rect,unsigned int n){
-            return makeStaticArrayBuffer(GL_QUADS,rect,n*sizeof(point));
-        }
-        static static_buffer* makeStaticLineBuffer(point* lines,unsigned int n){
-            return makeStaticArrayBuffer(GL_LINES,lines,n*sizeof(point));
-        }
-        static static_buffer* makeStaticLineStripBuffer(point* lines,unsigned int n){
-            return makeStaticArrayBuffer(GL_LINE_STRIP,lines,n*sizeof(point));
-        }
-        
-        static mutable_buffer* makeMutableArrayBuffer(GLenum mode,std::vector<point>* vec){
-            mutable_buffer* ret = new mutable_buffer;
-            
-            ret -> type = MUTABLE_BUFFER;
-            
-            ret -> vec = vec;
-            ret -> mode = mode;
-            
-            ret -> target = GL_ARRAY_BUFFER;
-            ret -> usage = GL_STREAM_DRAW;
-            
-            return ret;
-        }
-        
-        static mutable_buffer* makeMutableRectBuffer(std::vector<point>* rects){
-            return makeMutableArrayBuffer(GL_QUADS,rects);
-        }
-        
-        static mutable_buffer* makeMutableLineBuffer(std::vector<point>* lines){
-            return makeMutableArrayBuffer(GL_LINES,lines);
-        }
-        
-        static mutable_buffer* makeMutableLineStripBuffer(std::vector<point>* lines){
-            return makeMutableArrayBuffer(GL_LINE_STRIP,lines);
-        }
-        
-        ** MAKE SHAPES **
-        
-        static vec4* makeBox(GLfloat x, GLfloat y, GLfloat n){
-            return new point[4]{
-                point(x,y,0,1),
-                point(x+n,y,0,1),
-                point(x+n,y+n,0,1),
-                point(x,y+n,0,1)
-            };
-        }
-
-    };
-    
-    bmap glGraphics::buffers;
-    pmap glGraphics::programs;
-    void (*glGraphics::animate)();
-     */
     
 }
 

@@ -130,6 +130,15 @@ namespace gl{
         operator GLfloat* ()
         { return static_cast<GLfloat*>( &_m[0].x ); }
         
+        //Streams
+        friend std::ostream& operator << ( std::ostream& os, const mat4& m ) {
+            return os
+            << m._m[0]<<std::endl
+            << m._m[1]<<std::endl
+            << m._m[2]<<std::endl
+            << m._m[3];
+        }
+        
     };
 }
 

@@ -14,62 +14,47 @@
 
 namespace gl{
     
-    struct line{
+    typedef struct s_line{
         point* first;
         point* second;
-    };
+    } line;
+    typedef struct s_plane{
+        point* pt;
+        point* normal;
+    } plane;
     
-    inline
-    GLfloat dot(const point u, const point v){
-        return u.x * v.x + u.y * v.y + u.z * v.z;
+    line makeLine(point* a,point* b){
+        line l;
+            l.first = a;
+            l.second = b;
+        return l;
     }
-    
-    inline
-    GLfloat norm_sqr(const point v){
-        return v.x * v.x + v.y * v.y + v.z * v.z;
+    plane makePlane(point* pt,point* normal){
+        plane p;
+            p.pt = pt;
+            p.normal = normal;
+        return p;
     }
-    
-    inline
-    GLfloat norm(const point v){
-        return sqrt(norm_sqr(v));
-    }
-    
-    inline
-    point cross(const point b, const point c){
-        return point(b.y * c.z - c.y * b.z, b.z * c.x - c.z * b.x, b.x * c.y - c.x * b.y,1);
-    }
-    
-    bool
-    infiniteIntersection(line a, line b, point& i){
-        point da = *(a.second) - *(a.first);
-        point db = *(b.second) - *(b.first);
-        point dc = *(b.first)  - *(a.first);
-        
-        if (dot(dc, cross(da,db)) != 0.0) // lines are not coplanar
-            return false;
-        
-        GLfloat s = dot(cross(dc,db),cross(da,db)) / norm_sqr(cross(da,db));
-        if (s >= 0.0 && s <= 1.0){
-            i = *(a.first) + da * point(s,s,s,1);
-            return true;
-        }
-        
-        return false;
+    plane makePlane(point* p1,point* p2,point* p3){
+        plane p;
+            p.pt = p1;
+            p.normal = normal(p1,p2,p3);
+        return p;
     }
     
     
-    char doesIntersect(point p0, point p1, point p2, point p3, float *x, float *y)
+    char intersect_SEG_SEG(point p0, point p1, point p2, point p3, float *x, float *y)
     {
         //Algorithm inspired by vector cross product magnitude algortihm
         
         point scalar(
-                     //scalar 1
-                     p1.x - p0.x,
-                     p1.y - p0.y,
-                     //scalar 2
-                     p3.x - p2.x,
-                     p3.y - p2.y
-                     );
+            //scalar 1
+            p1.x - p0.x,
+            p1.y - p0.y,
+            //scalar 2
+            p3.x - p2.x,
+            p3.y - p2.y
+        );
         
         float
         s = ( scalar.x * (p0.y - p2.y) - scalar.y * (p0.x - p2.x)) / (-scalar.z * scalar.y + scalar.x * scalar.w),
