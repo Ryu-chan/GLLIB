@@ -10,6 +10,7 @@
 #define _GL_SCENE_H_
 
 #include "glMat.h"
+#include "l_data.h"
 
 // NODE
 
@@ -17,8 +18,8 @@ typedef struct  s_node{
     
     mat4        transform;
     void        (*render)( void );
-    s_node*       sibling;
-    s_node*       child;
+    s_node*     sibling;
+    s_node*     child;
     
     s_node():
         render  (NULL),
@@ -35,58 +36,17 @@ typedef struct  s_node{
     
 }               Node;
 
-// LINKED LIST
-
-typedef struct  s_llnode{
-    void*       elem;
-    s_llnode*   next;
-    
-    s_llnode(void* _elem,s_llnode* _next):
-        elem(_elem),
-        next(_next)
-    {}
-}               LLNode;
-
-typedef struct  s_linkedlist{
-    LLNode*     head;
-    
-    void add(void* elem){
-        head = new LLNode(elem,head);
-    }
-    void* remove(){
-        LLNode* oh = head;
-        head = head->next;
-        return oh->elem;
-    }
-}               LinkedList;
-
-// STACK
-
-typedef struct  s_stack{
-    
-    LinkedList  stack;
-    
-    void push(void* elem){
-        stack.add(elem);
-    }
-    void* pop(){
-        return stack.remove();
-    }
-    void* peek(){
-        return stack.head->elem;
-    }
-    
-    
-}               Stack;
 
 // TRAVERSE NODES
 
-mat4* model_view = new mat4(1);
+mat4* model_view;
 Stack mstack;
 
 void traverseRecurse(Node* node){
     if(NULL!=node){
-        mat4* new_view = new mat4(1);
+        mat4* new_view = (mat4*)xmalloc(sizeof(mat4));//new mat4(1);
+        *new_view = mat4(1.0);
+        
         *new_view *= *model_view;
         mstack.push(new_view);
         

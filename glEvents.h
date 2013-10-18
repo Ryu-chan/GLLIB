@@ -15,9 +15,9 @@ namespace gl{
         int x;
         int y;
         KeyEvent(unsigned char _key,int _x,int _y):
-            key(_key),
-            x(_x),
-            y(_y)
+        key(_key),
+        x(_x),
+        y(_y)
         {}
     };
     
@@ -27,10 +27,10 @@ namespace gl{
         int x;
         int y;
         MouseEvent(int _button,int _state,int _x,int _y):
-            button(_button),
-            state(_state),
-            x(_x),
-            y(_y)
+        button(_button),
+        state(_state),
+        x(_x),
+        y(_y)
         {}
     };
     
@@ -38,8 +38,8 @@ namespace gl{
         int x;
         int y;
         MouseMotionEvent(int _x,int _y):
-            x(_x),
-            y(_y)
+        x(_x),
+        y(_y)
         {}
     };
     
@@ -47,8 +47,8 @@ namespace gl{
         int x;
         int y;
         MouseDragEvent(int _x,int _y):
-            x(_x),
-            y(_y)
+        x(_x),
+        y(_y)
         {}
     };
     
