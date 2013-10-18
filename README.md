@@ -3,7 +3,7 @@ GLLIB (GL Library)
 
 About
 ----------
-GLLIB at the moment contains only header files that can be used as an abstraction layer for OpenGL to speed up developments time.  The files are currently a mixture of C and C++ code.  The goal for this project is to develop a detailed library for rendering, physics, data management, etc. written in C so that it can be used on all platforms including iOS development.
+GLLIB at the moment contains only header files that can be used as an abstraction layer for OpenGL to speed up development time.  The files are currently a mixture of C and C++ code.  The goal for this project is to develop a detailed library for rendering, physics, data management, etc. written in C so that it can be used on all platforms including iOS development.
 
 Author
 --- 
