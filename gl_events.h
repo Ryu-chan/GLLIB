@@ -14,6 +14,8 @@
 
 /** KEY EVENT **/
 
+unsigned char gl_modifier;
+
 typedef struct      s_keyevent{
     
     unsigned char   key;
@@ -45,12 +47,13 @@ void pass_keylistener(unsigned char key,int x,int y){
         ((keylistener)(node->elem))(ke);
     
     free(ke);
+    
+    gl_modifier = glutGetModifiers();
 }
-
 
 /** END KEY EVENT **/
 
-/*****TODO FINISH EVENT HANDLERS*****/
+/** MOUSE EVENT **/
 
 typedef struct      s_mouseevent{
     
@@ -70,6 +73,29 @@ t_mouseevent* makeMouseEvent(int _button,int _state,int _x,int _y){
     return me;
 }
 
+LinkedList gl_mouselisteners;
+
+typedef void(*mouselistener)(t_mouseevent*);
+
+void addMouseListener(mouselistener kl){
+    gl_mouselisteners.add((void*)kl);
+}
+
+void pass_mouselistener(int button,int state,int x,int y){
+    t_mouseevent* me = makeMouseEvent(button,state,x,y);
+    
+    for(llnode* node = gl_mouselisteners.head;node!=NULL;node=node->next)
+        ((mouselistener)(node->elem))(me);
+    
+    free(me);
+    
+    gl_modifier = glutGetModifiers();
+}
+
+/** END MOUSE EVENT **/
+
+/** MOUSE MOTION EVENT **/
+
 typedef struct      s_mousemotionevent{
     
     int             x;
@@ -85,6 +111,28 @@ t_mousemotionevent* makeMouseMotionEvent(int _x,int _y){
     
     return mme;
 }
+
+LinkedList gl_mousemotionlisteners;
+
+typedef void(*mousemotionlistener)(t_mousemotionevent*);
+
+void addMouseMotionListener(mouselistener kl){
+    gl_mouselisteners.add((void*)kl);
+}
+
+void pass_mousemotionlistener(int x,int y){
+    t_mousemotionevent* mme = makeMouseMotionEvent(x,y);
+    
+    for(llnode* node = gl_mousemotionlisteners.head;node!=NULL;node=node->next)
+        ((mousemotionlistener)(node->elem))(mme);
+    
+    free(mme);
+
+}
+
+/** END MOUSE MOTION EVENT **/
+
+/** MOUSE DRAG EVENT **/
 
 typedef struct      s_mousedragevent{
     
@@ -102,9 +150,32 @@ t_mousedragevent* makeMouseDragEvent(int _x,int _y){
     return mde;
 }
 
+LinkedList gl_mousedraglisteners;
 
+typedef void(*mousedraglistener)(t_mousedragevent*);
 
+void addMouseDragListener(mousedraglistener kl){
+    gl_mousedraglisteners.add((void*)kl);
+}
 
+void pass_mousedraglistener(int x,int y){
+    t_mousedragevent* me = makeMouseDragEvent(x,y);
+    
+    for(llnode* node = gl_mousedraglisteners.head;node!=NULL;node=node->next)
+        ((mousedraglistener)(node->elem))(me);
+    
+    free(me);
+}
 
+/** END MOUSE DRAG EVENT **/
+
+void initListeners(){
+    glutKeyboardFunc(pass_keylistener);
+    glutMouseFunc(pass_mouselistener);
+    glutPassiveMotionFunc(pass_mousemotionlistener);
+    glutMotionFunc(pass_mousedraglistener);
+}
+
+unsigned char getModifier(){return gl_modifier;}
 
 #endif

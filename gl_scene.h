@@ -9,17 +9,19 @@
 #ifndef _GL_SCENE_H_
 #define _GL_SCENE_H_
 
-#include "glMat.h"
+#include "l_util.h"
 #include "l_data.h"
+
+#include "gl_mat.h"
 
 // NODE
 
 typedef struct  s_node{
     
-    mat4        transform;
-    void        (*render)( void );
-    s_node*     sibling;
-    s_node*     child;
+    mat4        transform           = NULL;
+    void        (*render)( void )   = NULL;
+    s_node*     sibling             = NULL;
+    s_node*     child               = NULL;
     
     s_node():
         render  (NULL),
@@ -39,18 +41,18 @@ typedef struct  s_node{
 
 // TRAVERSE NODES
 
-mat4* model_view;
+mat4 model_view;
 Stack mstack;
 
 void traverseRecurse(Node* node){
     if(NULL!=node){
-        mat4* new_view = (mat4*)xmalloc(sizeof(mat4));//new mat4(1);
-        *new_view = mat4(1.0);
+        mat4 new_view = mat_4(1.0);
+        mat_mul_eq(&new_view,model_view);
         
-        *new_view *= *model_view;
-        mstack.push(new_view);
+        mstack.push((void*)new_view);
         
-        *model_view *= node->transform;
+        if(node->transform)
+            mat_mul_eq(&model_view,node->transform);
         
         if(node->render)
             node->render();
@@ -58,16 +60,18 @@ void traverseRecurse(Node* node){
         if(node->child)
             traverseRecurse(node->child);
         
-        model_view = (mat4*)mstack.pop();
+        free(model_view);
+        model_view = (mat4)mstack.pop();
+        
         
         if(node->sibling)
             traverseRecurse(node->sibling);
         
     }
 }
-void traverse(Node* node,mat4 worldview){
-    model_view = new mat4(1);
-    *model_view *= worldview;
+void traverse(Node* node){
+    free(model_view);
+    model_view = mat_4(1.0);
     traverseRecurse(node);
 }
 

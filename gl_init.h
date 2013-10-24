@@ -20,4 +20,11 @@
 
 #include "l_util.h"
 
+void glPrintError(const char* loc = "Undefined Location"){
+    xstr(loc);
+    xstr(": ");
+    xstr((char*)gluErrorString(glGetError()));
+    xstr("\n");
+}
+
 #endif
